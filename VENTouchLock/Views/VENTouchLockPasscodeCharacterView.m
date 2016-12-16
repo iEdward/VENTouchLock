@@ -4,6 +4,7 @@
 
 @property (strong, nonatomic) CAShapeLayer *circle;
 @property (strong, nonatomic) CAShapeLayer *hyphen;
+@property (strong, nonatomic) CAShapeLayer *emtyCircle;
 
 @end
 
@@ -32,7 +33,8 @@
     _isEmpty = YES;
     self.backgroundColor = [UIColor clearColor];
     [self drawCircle];
-    [self drawHyphen];
+    [self drawEmtyCircle];
+    //[self drawHyphen];
     [self redraw];
 }
 
@@ -40,6 +42,7 @@
 {
     self.circle.hidden = self.isEmpty;
     self.hyphen.hidden = !self.isEmpty;
+    self.emtyCircle.hidden = !self.isEmpty;
 }
 
 - (void)drawCircle
@@ -56,6 +59,21 @@
     circle.borderWidth = borderWidth;
     [self.layer addSublayer:circle];
     _circle = circle;
+}
+
+- (void)drawEmtyCircle
+{
+    CGFloat borderWidth = 2;
+    CGFloat radius = CGRectGetWidth(self.bounds) / 2 - borderWidth;
+    CAShapeLayer *emptyCircle = [CAShapeLayer layer];
+    emptyCircle.path = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(borderWidth, borderWidth, 2.0*radius, 2.0*radius)
+                        
+                                                  cornerRadius:radius].CGPath;
+    UIColor *circleColor = [UIColor blackColor];
+    emptyCircle.strokeColor =  circleColor.CGColor;
+    emptyCircle.borderWidth = borderWidth;
+    [self.layer addSublayer:emptyCircle];
+    _emtyCircle = emptyCircle;
 }
 
 - (void)drawHyphen
@@ -89,14 +107,18 @@
         [self redraw];
     }
 }
+
 - (void)setFillColor:(UIColor *)fillColor
 {
     _fillColor = fillColor;
     CGColorRef cgColor = fillColor.CGColor;
     self.hyphen.fillColor = cgColor;
     self.hyphen.strokeColor = cgColor;
+    self.emtyCircle.strokeColor = cgColor;
+    self.emtyCircle.fillColor = [UIColor clearColor].CGColor;
     self.circle.fillColor = cgColor;
     self.circle.strokeColor = cgColor;
 }
+
 
 @end

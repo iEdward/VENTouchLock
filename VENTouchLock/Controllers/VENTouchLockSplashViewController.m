@@ -81,6 +81,16 @@
 
 #pragma mark - Present unlock methods
 
+- (void)showUnlockAnimated:(BOOL)animated
+{
+    if ([VENTouchLock shouldUseTouchID]) {
+        [self showTouchID];
+    }
+    else {
+        [self showPasscodeAnimated:animated];
+    }
+}
+
 - (void)showTouchID
 {
     BOOL fromBackground = [UIApplication sharedApplication].applicationState == UIApplicationStateBackground;
