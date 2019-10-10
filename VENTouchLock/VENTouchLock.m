@@ -15,6 +15,7 @@ static NSString *const VENTouchLockUserDefaultsKeyTouchIDActivated = @"VENTouchL
 @property (assign, nonatomic) Class splashViewControllerClass;
 @property (strong, nonatomic) UIView *snapshotView;
 @property (strong, nonatomic) VENTouchLockAppearance *appearance;
+@property (strong, nonatomic) UIWindow *lockWindow;
 
 @end
 
@@ -182,6 +183,8 @@ static NSString *const VENTouchLockUserDefaultsKeyTouchIDActivated = @"VENTouchL
         VENTouchLockSplashViewController *splashViewController = [[self.splashViewControllerClass alloc] init];
         if ([splashViewController isKindOfClass:[VENTouchLockSplashViewController class]]) {
             UIWindow *mainWindow = [[UIApplication sharedApplication].windows firstObject];
+            self.lockWindow = [[UIWindow alloc] initWithFrame:mainWindow.frame];
+            self.lockWindow.windowLevel = UIWindowLevelAlert + 1;
             UIViewController *rootViewController = [UIViewController ventouchlock_topMostController];
             UIViewController *displayController;
             if (self.appearance.splashShouldEmbedInNavigationController) {
@@ -190,33 +193,18 @@ static NSString *const VENTouchLockUserDefaultsKeyTouchIDActivated = @"VENTouchL
             else {
                 displayController = splashViewController;
             }
-
-            BOOL fromBackground = [UIApplication sharedApplication].applicationState == UIApplicationStateBackground;
-            if (fromBackground) {
-                [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
-                VENTouchLockSplashViewController *snapshotSplashViewController = [[self.splashViewControllerClass alloc] init];
-                [snapshotSplashViewController setIsSnapshotViewController:YES];
-                UIViewController *snapshotDisplayController;
-                if (self.appearance.splashShouldEmbedInNavigationController) {
-                snapshotDisplayController = [snapshotSplashViewController ventouchlock_embeddedInNavigationControllerWithNavigationBarClass:self.appearance.navigationBarClass];
-                }
-                else {
-                    snapshotDisplayController = snapshotSplashViewController;
-                }
-                [snapshotDisplayController loadView];
-                [snapshotDisplayController viewDidLoad];
-                snapshotDisplayController.view.frame = mainWindow.bounds;
-                self.snapshotView = snapshotDisplayController.view;
-                [mainWindow addSubview:self.snapshotView];
-            }
             dispatch_async(dispatch_get_main_queue(), ^{
+                self.lockWindow.rootViewController = displayController;
                 self.backgroundLockVisible = YES;
-                [rootViewController presentViewController:displayController animated:NO completion:nil];
+                [self.lockWindow makeKeyAndVisible];
             });
         }
     }
 }
 
+- (void)unLock {
+    self.lockWindow = nil;
+}
 
 #pragma mark - NSNotifications
 
